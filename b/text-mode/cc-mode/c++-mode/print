@@ -1,0 +1,10 @@
+template<class T>
+void print(T p,T q,char c){
+  if(p!=q){
+    cout<<*p;
+    ++p;
+  }
+  for(;p!=q;++p)
+    cout<<c<<*p;
+  cout<<endl;
+}

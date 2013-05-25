@@ -1,0 +1,15 @@
+template<class T>
+struct Bit{
+  vector<T> a;
+  Bit(int n):a(n){}
+  T operator[](int p){
+    T sm=0;
+    for(;p>=0;p=(p&(p+1))-1)
+      sm+=a[p];
+    return sm;
+  }
+  void update(int p,T q){
+    for(;p<(int)a.size();p|=p+1)
+      a[p]+=q;
+  }
+};

@@ -1,0 +1,9 @@
+for(int _i=0;_i<6;++_i){
+  MatrixIterator _m( , ,_i),_mi=_m.begin(),_mj=_m.end();
+  for(;_mi!=_mj;++_mi){
+    MatrixIterator _ai=_mi.begin(),_aj=_mi.end();
+    for(;_ai!=_aj;++_ai){
+      [_ai.y][_ai.x];
+    }
+  }
+}

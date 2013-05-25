@@ -1,0 +1,33 @@
+struct Factor{
+  vector<int> a;
+  vector<pair<long long,int> > b;
+  vector<long long> c;
+  Factor(long long p):a(sieve(sqrt(p)+1)){}
+  void f(int p,long long q){
+    int i;
+    if(p==(int)b.size()){
+      c.push_back(q);
+      return;
+    }
+    long long pi=1;
+    for(i=0;i<b[p].second+1;++i){
+      f(p+1,q*pi);
+      pi*=b[p].first;
+    }
+  }
+  vector<long long> get(long long p){
+    int i,j;
+    b.clear();
+    for(i=0;i<(int)a.size()&&(long long)a[i]*a[i]<=p;++i){
+      for(j=0;!(p%a[i]);++j)
+        p/=a[i];
+      if(j)
+        b.push_back(make_pair(a[i],j));
+    }
+    if(p!=1)
+      b.push_back(make_pair(p,1));
+    c.clear();
+    f(0,1);
+    return c;
+  }
+};

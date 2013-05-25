@@ -1,0 +1,19 @@
+#include<deque>
+#include<list>
+#include<map>
+#include<queue>
+#include<set>
+#include<stack>
+#include<vector>
+#include<algorithm>
+#include<string>
+#include<iostream>
+#include<numeric>
+#include<cmath>
+#include<cstdio>
+#include<cstring>
+using namespace std;
+int main(){
+
+  return 0;
+}
