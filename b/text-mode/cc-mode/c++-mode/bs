@@ -1,3 +1,0 @@
-int T=,F=;
-while(abs(T-F)>1)
-  (f((T+F)/2)?T:F)=(T+F)/2;

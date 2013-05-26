@@ -1,7 +1,0 @@
-long long combi(int n,int m){
-  m=m<n-m?m:n-m;
-  long long a=1,b=1;
-  for(;b<=m;++b)
-    a=a*(b+n-m)/b;
-  return a;
-}
