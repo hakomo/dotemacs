@@ -1,17 +1,10 @@
 
 ;; (setq dropbox-emacs-dir "~/.emacs.d/")
 
-(require 'server)
-(when (not (server-running-p))
-  (server-start))
-
 (custom-set-variables
  '(menu-bar-mode nil)
  '(tool-bar-mode nil)
  '(scroll-bar-mode nil)
-
- ;; '(mode-line-format '(" " mode-line-buffer-identification " "
- ;;                      mode-line-modes))
 
  '(show-paren-mode t)
 
@@ -25,7 +18,7 @@
  '(scroll-step 1)
 
  '(indent-tabs-mode nil)
- ;; '(c-default-style "gnu")
+ '(c-default-style "gnu")
 
  '(auto-save-mode nil)
  '(make-backup-files nil)
@@ -36,8 +29,6 @@
 
  '(eval-expression-print-length nil)
 
- ;; '(default-frame-alist (append '((alpha . 90)) default-frame-alist))
-
  '(load-path (append (list dropbox-emacs-dir
                            (concat dropbox-emacs-dir "auto-install"))
                      load-path)))
@@ -45,7 +36,6 @@
 ;; (load-theme 'misterioso t)
 
 (custom-set-faces
- ;; '(anything-candidate-number    ((t ())))
  '(comint-highlight-prompt      ((t (                            ))))
  '(error                        ((t (:foreground "pink"          ))))
  '(font-lock-builtin-face       ((t (:foreground "deepSkyBlue"   ))))
@@ -69,8 +59,9 @@
  '(show-paren-match             ((t (:background "deepSkyBlue"   ))))
  '(show-paren-mismatch          ((t (:background "#902448"       ))))
 
- ;; '(anything-ff-file             ((t (                            ))))
- ;; '(anything-ff-directory        ((t (:inherit dired-directory    ))))
+ ;; '(anything-candidate-number    ((t ())))
+ '(anything-ff-file             ((t (                            ))))
+ '(anything-ff-directory        ((t (:inherit dired-directory    ))))
 
  '(default                      ((t (:family "consolas"
                                      :height 110
@@ -81,6 +72,8 @@
 (set-fontset-font nil 'japanese-jisx0208 (font-spec :family "MeiryoKe_Gothic"))
 
 (load "auto-reload")
+
+(require 'toggle-shell)
 
 (require 'window-config)
 
@@ -103,7 +96,7 @@
              '(mode-line . "\\<anything-map>"))
 (defun anything-yaetags ()
   (interactive)
-  (update-tags)
+  ;; (update-tags)
   (anything-other-buffer '(anything-c-source-yaetags-select)
                          "*anything yaetags*"))
 
@@ -174,15 +167,16 @@
   "sdic のバッファクローズを普通にする。"
   (bury-buffer sdic-buffer-name))
 
-(add-to-list 'load-path (concat dropbox-emacs-dir "yatex"))
-(require 'yatex)
+;; (require 'server)
+;; (when (not (server-running-p))
+;;   (server-start))
 
-;; (setq tex-command "platex")
-;; ;; (setq tex-command "ptex2pdf -l -ot '-texsync=1'")
+;; (add-to-list 'load-path (concat dropbox-emacs-dir "yatex"))
+;; (require 'yatex)
 
-(add-to-list 'load-path (concat dropbox-emacs-dir "site-lisp/site-start.d"))
-(load "auctex.el" nil t t)
-(load "preview-latex.el" nil t t)
+;; (add-to-list 'load-path (concat dropbox-emacs-dir "site-lisp/site-start.d"))
+;; (load "auctex.el" nil t t)
+;; (load "preview-latex.el" nil t t)
 
 (global-set-key (kbd "C-a") 'back-to-indentation-or-beginning-of-line)
 ;; c
@@ -191,7 +185,7 @@
 (global-set-key (kbd "C-f") 'anything-for-files)
 ;; g
 (global-set-key (kbd "C-h") 'delete-backward-char)
-;; (global-set-key (kbd "C-i") 'auto-complete)
+;; i
 (global-set-key (kbd "C-j") 'backward-char)
 (global-set-key (kbd "C-k") 'next-line)
 (global-set-key (kbd "C-l") 'previous-line)
@@ -199,15 +193,14 @@
 (global-set-key (kbd "C-o") 'other-window)
 (global-set-key (kbd "C-r") 'query-replace)
 (global-set-key (kbd "C-s") 'anything-c-moccur-occur-by-moccur)
-(global-set-key (kbd "C-t") 'anything-imenu)
+(global-set-key (kbd "C-t") 'toggle-shell)
 ;; u
 (global-set-key (kbd "C-v") 'auto-compile-and-execute)
 (global-set-key (kbd "C-w") 'kill-whole-line-or-region)
 ;; x
 (global-set-key (kbd "C-y") 'delete-region-and-yank)
 ;; SPC
-(global-set-key (kbd "C-,") 'scroll-up-command)
-(global-set-key (kbd "C-.") 'scroll-down-command)
+(global-set-key (kbd "C-.") 'anything-imenu)
 ;; /
 (global-set-key (kbd "C-;") 'forward-char)
 (global-set-key (kbd "C-`") 'next-error)
@@ -217,13 +210,13 @@
 (global-set-key (kbd "M-o") 'toggle-frame)
 (global-set-key (kbd "M-r") 'replace-string)
 (global-set-key (kbd "M-s") 'anything-c-moccur-dmoccur)
-(global-set-key (kbd "M-t") 'anything-yaetags)
 (global-set-key (kbd "M-u") 'upcase-backward-word)
 (global-set-key (kbd "M-w") 'kill-ring-save-whole-line-or-region)
 ;; x
+(global-set-key (kbd "M-.") 'anything-yaetags)
 (global-set-key (kbd "M-;") 'rough-comment)
 
-(global-set-key (kbd "C-x C-c") 'save-all-buffers-kill-emacs) ;;
+;; c
 ;; e
 
 (define-key anything-map (kbd "C-f") 'anything-quit-and-find-file)
@@ -247,8 +240,6 @@
 
 (define-key web-mode-map (kbd "C-;") nil)
 (define-key web-mode-map (kbd "M-;") nil)
-
-;; (define-key tex-mode-map (kbd "C-j") nil)
 
 (add-hook 'js-mode-hook (setq js-indent-level 2))
 
