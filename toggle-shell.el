@@ -2,11 +2,17 @@
 (defvar before-window)
 
 (defun make-shell ()
-  (when (and (not (eq (selected-window) (next-window)))
-             (= (car (window-edges)) 0))
-    (other-window 1))
-  (split-window-vertically 21)
-  (shell))
+  (cond
+   ((and (not (eq (selected-window) (next-window)))
+         (= (car (window-edges)) 0))
+    (other-window 1)
+    (split-window-vertically 21)
+    (shell)
+    nil)
+   (t
+    (split-window-vertically 21)
+    (shell)
+    t)))
 
 (defun toggle-shell ()
   (interactive)
@@ -19,6 +25,7 @@
       (select-window before-window))
      (t
       (setq before-window (selected-window))
-      (make-shell)))))
+      (when (make-shell)
+        (setq before-window (next-window)))))))
 
 (provide 'toggle-shell)
