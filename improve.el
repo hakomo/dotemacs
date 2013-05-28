@@ -1,29 +1,15 @@
 
-(defun save-all-buffers-kill-emacs ()
+(defun camel-to-snake-backward-word ()
   (interactive)
-  (save-some-buffers 4)
-  (kill-emacs))
-
-(defun upcase-backward-word (p)
-  "Convert previous word (or arg words) to upper case."
-  (interactive "p")
-  (upcase-word (- p)))
-
-;; (defun f-i ()
-;;   (interactive)
-;;   (message "%d" (following-char)))
-
-;; (defun upcase-backward-word (p)
-
-;;   (interactive "p")
-;; (let ((p (point)))
-;;   (save-excursion
-;;     (forward-word -1)
-;;     (while (= (preceding-char) 95)
-;;       (forward-word -1))
-;;     (upcase-region (point) p)))
-
-;; (upcase-region
+  (let ((case-fold-search nil)
+        (s (buffer-substring
+            (point) (save-excursion (forward-word -1) (point)))))
+    (delete-region (point) (progn (forward-word -1) (point)))
+    (insert (funcall (if (= (string-to-char s) (downcase (string-to-char s)))
+                         'downcase 'upcase)
+                     (replace-regexp-in-string
+                      "\\([A-Z]\\)" "_\\1"
+                      (store-substring s 0 (downcase (string-to-char s))))))))
 
 (defun rough-comment (bg ed)
   (interactive (list (point) (mark)))

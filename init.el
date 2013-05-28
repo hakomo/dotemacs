@@ -96,7 +96,6 @@
              '(mode-line . "\\<anything-map>"))
 (defun anything-yaetags ()
   (interactive)
-  ;; (update-tags)
   (anything-other-buffer '(anything-c-source-yaetags-select)
                          "*anything yaetags*"))
 
@@ -144,28 +143,7 @@
 (add-hook 'web-mode-hook
           (lambda () (add-to-list 'ac-sources 'ac-source-php-completion)))
 
-(add-to-list 'load-path (concat dropbox-emacs-dir "sdic"))
-(require 'sdic)
-;; sdic-display-buffer 書き換え
-(defadvice sdic-display-buffer (around sdic-display-buffer-normalize activate)
-  "sdic のバッファ表示を普通にする。"
-  (setq ad-return-value (buffer-size))
-  (let ((p (or (ad-get-arg 0)
-               (point))))
-    (and sdic-warning-hidden-entry
-         (> p (point-min))
-         (message "この前にもエントリがあります。"))
-    (goto-char p)
-    (display-buffer (get-buffer sdic-buffer-name))
-    (set-window-start (get-buffer-window sdic-buffer-name) p)))
-
-(defadvice sdic-other-window (around sdic-other-normalize activate)
-  "sdic のバッファ移動を普通にする。"
-  (other-window 1))
-
-(defadvice sdic-close-window (around sdic-close-normalize activate)
-  "sdic のバッファクローズを普通にする。"
-  (bury-buffer sdic-buffer-name))
+(load "sdic-for-popwin")
 
 ;; (require 'server)
 ;; (when (not (server-running-p))
@@ -210,7 +188,7 @@
 (global-set-key (kbd "M-o") 'toggle-frame)
 (global-set-key (kbd "M-r") 'replace-string)
 (global-set-key (kbd "M-s") 'anything-c-moccur-dmoccur)
-(global-set-key (kbd "M-u") 'upcase-backward-word)
+(global-set-key (kbd "M-u") 'camel-to-snake-backward-word)
 (global-set-key (kbd "M-w") 'kill-ring-save-whole-line-or-region)
 ;; x
 (global-set-key (kbd "M-.") 'anything-yaetags)

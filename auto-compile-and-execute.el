@@ -5,6 +5,57 @@
 (defvar execute-command-l "default")
 (make-variable-buffer-local 'execute-command-l)
 
+;; (setq project-alist '(("hakomo-desk" ("/home/hakomo/" . "b") ("c" . "d"))
+;;                       ("hakomo-note" ("e" . "f") ("g" . "h"))))
+
+;; (defun starts-with (s t)
+;;   (string= (substring s 0 (min (length s) (length t))) t))
+
+;; (defun project-exists-p ()
+;;   (let ((l (cdr (assoc system-name project-alist))))
+;;     (if (not l) nil
+;;       (while (and l (not (starts-with buffer-file-name (caar l))))
+;;         (setq l (cdr l)))
+;;       (car l))))
+
+;; (setq a-a '())
+;; (add-to-list 'a-a '("hakomo-desk" ("a" . "b") ("c" . "d")))
+;; (add-to-list 'a-a '("hakomo-note" ("e" . "f") ("g" . "h")))
+
+;; (defun (l p)
+;;   (let ((m nil) (q nil))
+;;     (while l
+;;       (cond
+;;        ((starts-with buffer-file-name (caar l))
+;;         (add-to-list 'm 'p)
+;;         (setq m (append m (cdr l))
+;;               q t
+;;               l nil))
+;;        (t
+;;         (add-to-list 'm (car l))
+;;         (setq l (cdr l)))))
+;;     (when (not q)
+;;       (add-to-list 'm 'p))
+;;     m))
+
+;; (defun ()
+;;   (let ((l project-alist) (m nil) (p nil))
+;;     (while l
+;;       (cond
+;;        ((string= (caar l) system-name)
+;;         (add-to-list 'm (cons system-name (* (cdar l) '(d . f))))
+;;         (setq m (append m (cdr l))
+;;               p r
+;;               l nil))
+;;        (t
+;;         (add-to-list 'm (car l))
+;;         (setq l (cdr l)))))
+;;     (when (not p)
+;;       (add-to-list 'm `(,system-name (d . f))))
+;;     m))
+
+;; (add-to-list 'project-alist `(,system-name ((,d . ,f))))
+
 (defun cd-unique-file (d n f)
   (shell-command
    (cond
@@ -42,6 +93,14 @@
 (defun execute ()
   (interactive)
   (setq execute-command-l (read-string "Execute command: " execute-command-l)))
+
+;; (let ((d (read-directory-name "Project root directory: "))
+;;       (f (read-file-name "Main file: " buffer-file-name)))
+;;   (setq f (substring f (length d)))
+
+
+
+;;   )
 
 (defun auto-compile-and-execute-java ()
   (let ((d (get-unique-file-path "javaMainPath")))
@@ -127,11 +186,11 @@
 ;; reload();
 ;; ")))))
 
-(defun TeX-command-master-a (&optional override-confirm)
-  (interactive "P")
-  (add-to-list 'TeX-command-list '("ptex2pdf" "ptex2pdf -l -ot '-synctex=1' %t"
-                                   TeX-run-TeX nil (latex-mode)))
-  (TeX-command "ptex2pdf" 'TeX-master-file override-confirm))
+;; (defun TeX-command-master-a (&optional override-confirm)
+;;   (interactive "P")
+;;   (add-to-list 'TeX-command-list '("ptex2pdf" "ptex2pdf -l -ot '-synctex=1' %t"
+;;                                    TeX-run-TeX nil (latex-mode)))
+;;   (TeX-command "ptex2pdf" 'TeX-master-file override-confirm))
 
 (defun auto-compile-and-execute ()
   (interactive)
@@ -140,30 +199,30 @@
    ((eq major-mode 'emacs-lisp-mode)
     (emacs-lisp-byte-compile))
 
-   ((eq major-mode 'latex-mode)
+   ;; ((eq major-mode 'latex-mode)
 
-    (let ((n (file-name-nondirectory buffer-file-name)))
-      (cond
-       ((file-newer-than-file-p n (concat (file-name-sans-extension n) ".pdf"))
-        ;; (when (string= compile-command "make -k ")
-        ;;   (setq compile-command (concat "ptex2pdf -l -ot '-synctex=1' " n)))
+   ;;  (let ((n (file-name-nondirectory buffer-file-name)))
+   ;;    (cond
+   ;;     ((file-newer-than-file-p n (concat (file-name-sans-extension n) ".pdf"))
+   ;;      ;; (when (string= compile-command "make -k ")
+   ;;      ;;   (setq compile-command (concat "ptex2pdf -l -ot '-synctex=1' " n)))
 
-        ;; (setq execute-function
-        ;;       `(lambda ()
-        ;;          (shell-command
-        ;;           ,(format "fwdsumatrapdf.exe %s.pdf %s %d"
-        ;;                    (file-name-sans-extension n) n
-        ;;                    (line-number-at-pos)))))
+   ;;      ;; (setq execute-function
+   ;;      ;;       `(lambda ()
+   ;;      ;;          (shell-command
+   ;;      ;;           ,(format "fwdsumatrapdf.exe %s.pdf %s %d"
+   ;;      ;;                    (file-name-sans-extension n) n
+   ;;      ;;                    (line-number-at-pos)))))
 
-        (TeX-command-master-a)
+   ;;      (TeX-command-master-a)
 
-        ;; (compile compile-command)
-        )
+   ;;      ;; (compile compile-command)
+   ;;      )
 
-       (t
-        (shell-command
-         (format "fwdsumatrapdf.exe %s.pdf %s %d" (file-name-sans-extension n) n
-                 (line-number-at-pos)))))))
+   ;;     (t
+   ;;      (shell-command
+   ;;       (format "fwdsumatrapdf.exe %s.pdf %s %d" (file-name-sans-extension n) n
+   ;;               (line-number-at-pos)))))))
 
    ((eq major-mode 'java-mode)
     (auto-compile-and-execute-java))))
@@ -185,10 +244,9 @@
 (setq compilation-finish-functions 'auto-close)
 
 (defun update-tags ()
-  (interactive)
-  (save-some-buffers t)
   (let ((d (get-root)))
-    (when (not d)
-      (setq d (read-directory-name "Project root directory: ")))
-    (shell-command (concat "ctags -e -f " d "TAGS -R -L - "
-                           (directory-file-name d)))))
+    (when d
+      (shell-command (concat "ctags -e -f " d "TAGS -R -L - "
+                             (directory-file-name d))))))
+
+(add-hook 'after-save-hook 'update-tags)
