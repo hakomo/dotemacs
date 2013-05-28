@@ -194,7 +194,7 @@
 (global-set-key (kbd "M-.") 'anything-yaetags)
 (global-set-key (kbd "M-;") 'rough-comment)
 
-;; c
+(global-set-key (kbd "C-x C-c") 'save-buffers-kill-processes-and-terminal)
 ;; e
 
 (define-key anything-map (kbd "C-f") 'anything-quit-and-find-file)

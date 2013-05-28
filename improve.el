@@ -1,4 +1,10 @@
 
+(defun save-buffers-kill-processes-and-terminal (&optional ARG)
+  (interactive)
+  (dolist (p (process-list))
+    (set-process-query-on-exit-flag p nil))
+  (save-buffers-kill-terminal ARG))
+
 (defun camel-to-snake-backward-word ()
   (interactive)
   (let ((case-fold-search nil)
