@@ -71,7 +71,18 @@
 
 (set-fontset-font nil 'japanese-jisx0208 (font-spec :family "MeiryoKe_Gothic"))
 
-(load "auto-reload")
+;; (require 'auto-install)
+;; (setq auto-install-directory (concat dropbox-emacs-dir "auto-install/"))
+;; (auto-install-update-emacswiki-package-name t)
+;; (auto-install-compatibility-setup)
+
+(require 'package)
+(setq package-user-dir (concat dropbox-emacs-dir "elpa"))
+;; (add-to-list 'package-archives
+;;              '("melpa" . "http://melpa.milkbox.net/packages/") t)
+;; (add-to-list 'package-archives
+;;              '("marmalade" . "http://marmalade-repo.org/packages/"))
+(package-initialize)
 
 (require 'toggle-shell)
 
@@ -80,11 +91,6 @@
 (load "improve")
 
 (load "auto-compile-and-execute")
-
-;; (require 'auto-install)
-;; (setq auto-install-directory (concat dropbox-emacs-dir "auto-install"))
-;; (auto-install-update-emacswiki-package-name t)
-;; (auto-install-compatibility-setup)
 
 (require 'anything-startup)
 (add-to-list 'anything-c-source-imenu '(mode-line . "\\<anything-map>"))
@@ -111,18 +117,18 @@
 ;; (require 'yasnippet)
 ;; (yas-global-mode 1)
 
-(add-to-list 'load-path (concat dropbox-emacs-dir "auto-complete"))
-(require 'auto-complete-config)
-(add-to-list 'ac-dictionary-directories
-             (concat dropbox-emacs-dir "auto-complete/dict"))
-(ac-config-default)
-(setq ac-auto-start nil) ;;
-(add-to-list 'ac-modes 'web-mode)
-(setq ac-use-fuzzy nil) ;;
+;; (add-to-list 'load-path (concat dropbox-emacs-dir "auto-complete"))
+;; (require 'auto-complete-config)
+;; (add-to-list 'ac-dictionary-directories
+;;              (concat dropbox-emacs-dir "auto-complete/dict"))
+;; (ac-config-default)
+;; (setq ac-auto-start nil) ;;
+;; (add-to-list 'ac-modes 'web-mode)
+;; (setq ac-use-fuzzy nil) ;;
 
-(setq ac-use-menu-map t) ;;
-(define-key ac-menu-map (kbd "C-k") 'ac-next) ;;
-(define-key ac-menu-map (kbd "C-l") 'ac-previous) ;;
+;; (setq ac-use-menu-map t) ;;
+;; (define-key ac-menu-map (kbd "C-k") 'ac-next) ;;
+;; (define-key ac-menu-map (kbd "C-l") 'ac-previous) ;;
 
 (require 'color-moccur)
 (setq moccur-split-word t)
@@ -132,29 +138,14 @@
       anything-c-moccur-enable-auto-look-flag t
       anything-c-moccur-enable-initial-pattern t)
 
-(require 'web-mode)
-(setq auto-mode-alist
-      (append '(("\\.[sx]?html?\\(\\.[a-zA-Z_]+\\)?\\'" . web-mode)
-                ("\\.inc\\'" . web-mode) ("\\.phtml\\'" . web-mode)
-                ("\\.php[s34]?\\'" . web-mode)) auto-mode-alist))
+(require 'php-mode)
 
-(require 'php-completion)
+;; (require 'php-completion)
 
-(add-hook 'web-mode-hook
-          (lambda () (add-to-list 'ac-sources 'ac-source-php-completion)))
+;; (add-hook 'php-mode-hook
+;;           (lambda () (add-to-list 'ac-sources 'ac-source-php-completion)))
 
 (load "sdic-for-popwin")
-
-;; (require 'server)
-;; (when (not (server-running-p))
-;;   (server-start))
-
-;; (add-to-list 'load-path (concat dropbox-emacs-dir "yatex"))
-;; (require 'yatex)
-
-;; (add-to-list 'load-path (concat dropbox-emacs-dir "site-lisp/site-start.d"))
-;; (load "auctex.el" nil t t)
-;; (load "preview-latex.el" nil t t)
 
 (global-set-key (kbd "C-a") 'back-to-indentation-or-beginning-of-line)
 ;; c
@@ -216,14 +207,12 @@
 (define-key anything-c-moccur-anything-map (kbd "C-;")
   'anything-c-moccur-anything-next-file-matches)
 
-(define-key web-mode-map (kbd "C-;") nil)
-(define-key web-mode-map (kbd "M-;") nil)
-
 (add-hook 'js-mode-hook (setq js-indent-level 2))
 
 ;; (mapc (lambda (mdhook)
 ;;         (add-hook mdhook 'linum-mode))
-;;       '(emacs-lisp-mode-hook c-mode-hook c++-mode-hook ruby-mode-hook
-;;                              js-mode-hook java-mode-hook web-mode-hook))
+;;       '(c-mode-hook css-mode-hook c++-mode-hook emacs-lisp-mode-hook
+;;                     html-mode-hook java-mode-hook js-mode-hook
+;;                     latex-mode-hook php-mode-hook ruby-mode-hook))
 
 (add-hook 'before-save-hook 'delete-trailing-whitespace)

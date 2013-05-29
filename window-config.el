@@ -280,6 +280,8 @@
   (modify-frame)
   (setq frame-id (% (+ frame-id 1) (length winconf-list))))
 
+(shell)
+(switch-to-buffer "*scratch*")
 (toggle-frame)
 
 (provide 'window-config)

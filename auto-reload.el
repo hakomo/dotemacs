@@ -1,11 +1,8 @@
 
 (require 'moz)
 
-(defun auto-reload-after-save ()
-  (add-hook 'after-save-hook
-            '(lambda ()
-               (interactive)
-               (comint-send-string (inferior-moz-process) "
+(defun auto-reload ()
+  (comint-send-string (inferior-moz-process) "
 function reload(){
   var i;
   for(i=0;i<gBrowser.browsers.length;++i){
@@ -17,8 +14,6 @@ function reload(){
   BrowserReload();
 }
 reload();
-"))))
+"))
 
-(add-hook 'web-mode-hook 'auto-reload-after-save)
-(add-hook 'css-mode-hook 'auto-reload-after-save)
-(add-hook 'js-mode-hook 'auto-reload-after-save)
+(provide 'auto-reload)

@@ -1,196 +1,184 @@
 
+(require 'flycheck)
+
+(require 'auto-reload)
+
+(require 'server)
+(server-start)
+
 (make-variable-buffer-local 'compile-command)
 
 (defvar execute-function)
 (defvar execute-command-l "default")
 (make-variable-buffer-local 'execute-command-l)
 
-;; (setq project-alist '(("hakomo-desk" ("/home/hakomo/" . "b") ("c" . "d"))
-;;                       ("hakomo-note" ("e" . "f") ("g" . "h"))))
+(defvar shell-delimiter (if (eq system-type 'windows-nt) "&" ";"))
 
-;; (defun starts-with (s t)
-;;   (string= (substring s 0 (min (length s) (length t))) t))
-
-;; (defun project-exists-p ()
-;;   (let ((l (cdr (assoc system-name project-alist))))
-;;     (if (not l) nil
-;;       (while (and l (not (starts-with buffer-file-name (caar l))))
-;;         (setq l (cdr l)))
-;;       (car l))))
-
-;; (setq a-a '())
-;; (add-to-list 'a-a '("hakomo-desk" ("a" . "b") ("c" . "d")))
-;; (add-to-list 'a-a '("hakomo-note" ("e" . "f") ("g" . "h")))
-
-;; (defun (l p)
-;;   (let ((m nil) (q nil))
-;;     (while l
-;;       (cond
-;;        ((starts-with buffer-file-name (caar l))
-;;         (add-to-list 'm 'p)
-;;         (setq m (append m (cdr l))
-;;               q t
-;;               l nil))
-;;        (t
-;;         (add-to-list 'm (car l))
-;;         (setq l (cdr l)))))
-;;     (when (not q)
-;;       (add-to-list 'm 'p))
-;;     m))
-
-;; (defun ()
-;;   (let ((l project-alist) (m nil) (p nil))
-;;     (while l
-;;       (cond
-;;        ((string= (caar l) system-name)
-;;         (add-to-list 'm (cons system-name (* (cdar l) '(d . f))))
-;;         (setq m (append m (cdr l))
-;;               p r
-;;               l nil))
-;;        (t
-;;         (add-to-list 'm (car l))
-;;         (setq l (cdr l)))))
-;;     (when (not p)
-;;       (add-to-list 'm `(,system-name (d . f))))
-;;     m))
-
-;; (add-to-list 'project-alist `(,system-name ((,d . ,f))))
-
-(defun cd-unique-file (d n f)
-  (shell-command
-   (cond
-    ((eq system-type 'gnu/linux)
-     "") ;;
-    ((eq system-type 'windows-nt)
-     (concat "del " d " " n " /s"))))
-  (write-region f nil (concat d n)))
-
-(defun get-unique-file-path (n)
-  (let ((d default-directory)
-        (p ""))
+(defun get-parent-directory-file (d n)
+  (let ((p ""))
     (while (not (or (string= d p) (file-exists-p (concat d n))))
       (setq p d
             d (file-name-directory (directory-file-name d))))
     (if (string= d p) nil d)))
 
-(defun get-root ()
-  (let ((d (get-unique-file-path "javaMainPath"))
-        (e (get-unique-file-path "TAGS")))
-    (if d d e)))
+(defun get-root-directory ()
+  (let ((d (get-parent-directory-file default-directory ".projectemacs")))
+    (if d d (get-parent-directory-file default-directory "TAGS"))))
 
-(defun cd-root (d)
+(defun delete-file-parent-directory (d n)
+  (let ((p ""))
+    (while (not (string= d p))
+      (when (file-exists-p (concat d n))
+        (delete-file (concat d n)))
+      (setq p d
+            d (file-name-directory (directory-file-name d))))))
+
+(defun delete-file-recursively (d n)
+  (dolist (f (directory-files d))
+    (cond
+     ((file-directory-p f)
+      (when (not (or (string= f ".") (string= f "..")))
+        (delete-file-recursively (concat d f "/") n)))
+     ((string= f n)
+      (delete-file (concat d n))))))
+
+(defun init-file (d n f)
+  (delete-file-parent-directory d n)
+  (delete-file-recursively d n)
+  (write-region f nil (concat d n)))
+
+(defun init-project (d)
   (interactive "DProject root directory: ")
-  (cd-unique-file d "javaMainPath" (substring buffer-file-name (length d)))
-  (cd-unique-file d "TAGS" nil))
+  (setq d (expand-file-name d))
+  (init-file
+   d ".projectemacs"
+   (substring (expand-file-name (read-file-name "Main file: " buffer-file-name))
+              (length d)))
+  (init-file d "TAGS" "")
+  (update-tags))
 
-(defun update-main-path ()
-  (interactive)
-  (let ((d (get-root)))
-    (when (not d)
-      (setq d (read-directory-name "Project root directory: ")))
-    (cd-unique-file d "javaMainPath" (substring buffer-file-name (length d)))))
-
-(defun execute ()
-  (interactive)
-  (setq execute-command-l (read-string "Execute command: " execute-command-l)))
-
-;; (let ((d (read-directory-name "Project root directory: "))
-;;       (f (read-file-name "Main file: " buffer-file-name)))
-;;   (setq f (substring f (length d)))
-
-
-
-;;   )
+;; (defun execute ()
+;;   (interactive)
+;;   (setq execute-command-l (read-string "Execute command: " execute-command-l)))
 
 (defun auto-compile-and-execute-java ()
-  (let ((d (get-unique-file-path "javaMainPath")))
-    (when (not d)
-      (setq d (get-unique-file-path "TAGS"))
-      (when (not d)
-        (setq d (read-directory-name "Project root directory: ")))
-      (cd-unique-file
-       d "javaMainPath"
-       (substring (read-file-name "Main file: " buffer-file-name) (length d))))
-    (when (not (file-exists-p "classes"))
-      (make-directory "classes"))
+  (let ((d (get-root-directory)))
+    (cond
+     (d
+      (when (not (file-directory-p (concat d "classes")))
+        (make-directory (concat d "classes")))
 
-    (when (string= compile-command "make -k ")
-      (setq compile-command
-            (concat "javac -cp " d ".. -d " d "classes " d
-                    (with-temp-buffer
-                      (insert-file-contents (concat d "javaMainPath"))
-                      (buffer-string)) " ")))
+      (when (string= compile-command "make -k ")
+        (setq compile-command
+              (concat "javac -cp \"" d "..\" -d \"" d "classes\" \"" d
+                      (with-temp-buffer
+                        (insert-file-contents (concat d ".projectemacs"))
+                        (buffer-string)) "\" ")))
 
-    (when (string= execute-command-l "default")
-      (setq execute-command-l
-            (concat "java -cp " d "classes "
-                    (replace-regexp-in-string
-                     "/" "."
-                     (concat (substring d (length (file-name-directory
-                                                   (directory-file-name d))))
-                             (file-name-sans-extension
-                              (with-temp-buffer
-                                (insert-file-contents (concat d "javaMainPath"))
-                                (buffer-string))))) " "))))
+      (when (string= execute-command-l "default")
+        (setq execute-command-l
+              (concat "java -cp \"" d "classes\" \""
+                      (replace-regexp-in-string
+                       "/" "."
+                       (concat (substring d (length (file-name-directory
+                                                     (directory-file-name d))))
+                               (file-name-sans-extension
+                                (with-temp-buffer (insert-file-contents
+                                                   (concat d ".projectemacs"))
+                                                  (buffer-string))))) "\" ")))
+
+      (setq execute-function
+            (if (string= execute-command-l "")
+                nil
+              `(lambda ()
+                 (set-buffer "*shell*")
+                 (goto-char (point-max))
+                 (comint-kill-input)
+                 (insert ,execute-command-l)
+                 (comint-send-input)))))
+     (t
+      (when (string= compile-command "make -k ")
+        (setq compile-command
+              (concat "javac \"" (file-name-nondirectory buffer-file-name)
+                      "\" ")))
+
+      (when (string= execute-command-l "default")
+        (setq execute-command-l
+              (concat "java -cp . \"" (file-name-sans-extension
+                                       (file-name-nondirectory
+                                        buffer-file-name)) "\" ")))
+
+      (setq execute-function
+            (if (string= execute-command-l "")
+                nil
+              `(lambda ()
+                 (set-buffer "*shell*")
+                 (goto-char (point-max))
+                 (comint-kill-input)
+                 (insert ,(concat "cd \"" default-directory "\" "
+                                  shell-delimiter " " execute-command-l))
+                 (comint-send-input)))))))
+
+  (compile compile-command))
+
+(defun auto-compile-and-execute-cpp ()
+  (when (string= compile-command "make -k ")
+    (setq compile-command
+          (concat "g++ -Wall \"" (file-name-nondirectory buffer-file-name)
+                  "\" ")))
+
+  (when (string= execute-command-l "default")
+    (setq execute-command-l "./a.out "))
+
   (setq execute-function
         (if (string= execute-command-l "")
-            'invalid
+            nil
           `(lambda ()
              (set-buffer "*shell*")
              (goto-char (point-max))
              (comint-kill-input)
-             (insert ,execute-command-l)
+             (insert ,(concat "cd \"" default-directory "\" "
+                              shell-delimiter " " execute-command-l))
              (comint-send-input))))
+
   (compile compile-command))
 
-;; (defun url-escape-point (c)
-;;   "Escape (quote) a character for a URL"
-;;   (format "%%%X" (string-to-char c)))
+(defun auto-compile-and-execute-tex ()
+  (let ((n (file-name-sans-extension (file-name-nondirectory
+                                      buffer-file-name))))
+    (cond
+     ((file-newer-than-file-p (concat n ".tex") (concat n ".pdf"))
+      (setq execute-function
+            `(lambda ()
+               (set-buffer "*shell*")
+               (goto-char (point-max))
+               (comint-kill-input)
+               (insert ,(format "cd \"%s\" %s ptex2pdf -l -ot '-synctex=1' \"%s.tex\" %s fwdsumatrapdf.exe \"%s.pdf\" \"%s.tex\" %d "
+                                default-directory shell-delimiter n
+                                shell-delimiter n n (line-number-at-pos)))
+               (comint-send-input)))
+      (flycheck-compile))
+     (t
+      (shell-command (format "fwdsumatrapdf.exe \"%s.pdf\" \"%s.tex\" %d " n n
+                             (line-number-at-pos)))))))
 
-;; (defun url-quote-str-utf8 (s)
-;;   "Quote special characters in a URL string"
-;;   (let ((unquoted-re "[^a-zA-Z0-9_./-:]")
-;;         (encoded (encode-coding-string s 'utf-8))
-;;         (n 0))
-;;     (while (setq n (string-match unquoted-re encoded n))
-;;       (setq encoded
-;;             (replace-match (url-escape-point (match-string 0 encoded))
-;;                            t t encoded)
-;;             n (1+ n)))
-;;     encoded))
+(defun auto-compile-and-execute-ruby ()
+  (when (string= execute-command-l "default")
+    (setq execute-command-l (concat "ruby \"" (file-name-nondirectory
+                                               buffer-file-name) "\" ")))
 
-;; (defun url-quote-region-utf8 (min max)
-;;   "Quote text for inclusion in a HTTP URL"
-;;   (interactive "*r")
-;;   (let ((s (copy-sequence (buffer-substring min max))))
-;;     (goto-char max)
-;;     (insert " => ")
-;;     (set-mark-command nil)
-;;     (insert (url-quote-str-utf8 s))))
+  (setq execute-function
+        (if (string= execute-command-l "")
+            nil
+          `(lambda ()
+             (set-buffer "*shell*")
+             (goto-char (point-max))
+             (comint-kill-input)
+             (insert ,(concat "cd \"" default-directory "\" "
+                              shell-delimiter " " execute-command-l))
+             (comint-send-input))))
 
-;;     (setq execute-function
-;;           (if (string= execute-command-l "")
-;;               'invalid
-;;             `(lambda ()
-;;                (comint-send-string (inferior-moz-process) ,(concat "
-;; function reload(){
-;;   var i;
-;;   for(i=0;i<gBrowser.browsers.length;++i){
-;;     var spec=gBrowser.getBrowserAtIndex(i).currentURI.spec.toLowerCase();
-;;     if(spec=='file:///" (url-quote-str-utf8 (file-name-sans-extension buffer-file-name)) ".pdf" "'.toLowerCase())break;
-;;   }
-;;   if(i>=gBrowser.browsers.length)return;
-;;   gBrowser.selectedTab=gBrowser.tabContainer.childNodes[i];
-;;   BrowserReload();
-;; }
-;; reload();
-;; ")))))
-
-;; (defun TeX-command-master-a (&optional override-confirm)
-;;   (interactive "P")
-;;   (add-to-list 'TeX-command-list '("ptex2pdf" "ptex2pdf -l -ot '-synctex=1' %t"
-;;                                    TeX-run-TeX nil (latex-mode)))
-;;   (TeX-command "ptex2pdf" 'TeX-master-file override-confirm))
+  (flycheck-compile))
 
 (defun auto-compile-and-execute ()
   (interactive)
@@ -199,54 +187,45 @@
    ((eq major-mode 'emacs-lisp-mode)
     (emacs-lisp-byte-compile))
 
-   ;; ((eq major-mode 'latex-mode)
+   ((eq major-mode 'latex-mode)
+    (auto-compile-and-execute-tex))
 
-   ;;  (let ((n (file-name-nondirectory buffer-file-name)))
-   ;;    (cond
-   ;;     ((file-newer-than-file-p n (concat (file-name-sans-extension n) ".pdf"))
-   ;;      ;; (when (string= compile-command "make -k ")
-   ;;      ;;   (setq compile-command (concat "ptex2pdf -l -ot '-synctex=1' " n)))
+   ((or (eq major-mode 'html-mode)
+        (eq major-mode 'css-mode)
+        (eq major-mode 'js-mode)
+        (eq major-mode 'php-mode))
+    (auto-reload))
 
-   ;;      ;; (setq execute-function
-   ;;      ;;       `(lambda ()
-   ;;      ;;          (shell-command
-   ;;      ;;           ,(format "fwdsumatrapdf.exe %s.pdf %s %d"
-   ;;      ;;                    (file-name-sans-extension n) n
-   ;;      ;;                    (line-number-at-pos)))))
+   ((eq major-mode 'ruby-mode)
+    (auto-compile-and-execute-ruby))
 
-   ;;      (TeX-command-master-a)
-
-   ;;      ;; (compile compile-command)
-   ;;      )
-
-   ;;     (t
-   ;;      (shell-command
-   ;;       (format "fwdsumatrapdf.exe %s.pdf %s %d" (file-name-sans-extension n) n
-   ;;               (line-number-at-pos)))))))
+   ((or (eq major-mode 'c-mode)
+        (eq major-mode 'c++-mode))
+    (auto-compile-and-execute-cpp))
 
    ((eq major-mode 'java-mode)
     (auto-compile-and-execute-java))))
 
 (defun auto-close (b s)
   (when (string-match "finished" s)
-    (when (save-current-buffer
-            (set-buffer b)
-            (save-excursion
-              (goto-char (point-min))
-              (not (or (search-forward "warning:" nil t)
-                       ;; (search-forward "" nil t)
-                       (search-forward "note:" nil t)
-                       ;; (search-forward "" nil t)
-                       ))))
-      (delete-window (get-buffer-window b)))
-    (funcall execute-function)))
+    (with-current-buffer b
+      (let ((i (point-min)))
+        (while (and (<= i (point-max))
+                    (not (equal (get-text-property i 'face)
+                                '(compilation-line-number underline))))
+          (setq i (1+ i)))
+        (when (> i (point-max))
+          (delete-window (get-buffer-window b))
+          (when execute-function
+            (funcall execute-function)))))))
 
 (setq compilation-finish-functions 'auto-close)
 
 (defun update-tags ()
-  (let ((d (get-root)))
+  (let ((d (get-root-directory)))
     (when d
-      (shell-command (concat "ctags -e -f " d "TAGS -R -L - "
-                             (directory-file-name d))))))
+      (shell-command
+       (concat "ctags -e -f \"" d "TAGS\" -R -L - \"" (directory-file-name d)
+               "\" ")))))
 
 (add-hook 'after-save-hook 'update-tags)
