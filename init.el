@@ -72,7 +72,7 @@
 (set-fontset-font nil 'japanese-jisx0208 (font-spec :family "MeiryoKe_Gothic"))
 
 ;; (require 'auto-install)
-;; (setq auto-install-directory (concat dropbox-emacs-dir "auto-install/"))
+;; (setq auto-install-directory (concat dropbox-emacs-dir "auto-install"))
 ;; (auto-install-update-emacswiki-package-name t)
 ;; (auto-install-compatibility-setup)
 
@@ -110,8 +110,8 @@
 (setq popwin:popup-window-height 16
       anything-samewindow nil
       popwin:special-display-config
-      (append '(("*anything*") ("*anything for files*") ("*anything yaetags*")
-                ("*sdic*")) popwin:special-display-config))
+      (append '(("*anything*") ("*anything for files*") ("*anything yaetags*"))
+              popwin:special-display-config))
 
 ;; (add-to-list 'load-path (concat dropbox-emacs-dir "yasnippet"))
 ;; (require 'yasnippet)
@@ -123,7 +123,7 @@
 ;;              (concat dropbox-emacs-dir "auto-complete/dict"))
 ;; (ac-config-default)
 ;; (setq ac-auto-start nil) ;;
-;; (add-to-list 'ac-modes 'web-mode)
+;; (add-to-list 'ac-modes 'php-mode)
 ;; (setq ac-use-fuzzy nil) ;;
 
 ;; (setq ac-use-menu-map t) ;;
@@ -138,14 +138,34 @@
       anything-c-moccur-enable-auto-look-flag t
       anything-c-moccur-enable-initial-pattern t)
 
+(defvar pm-list '("\\.c\\'" "\\.h\\'" "\\.hbp\\'" "\\.hsf\\'" "\\.hws\\'"
+                  "\\.inc\\'" "\\.java\\'" "\\.nav\\'" "\\.oil\\'" "\\.pgs\\'"
+                  "\\.sgt\\'" "\\.src\\'" "\\.tps\\'" "\\.tws\\'"))
+
+(defun find-file-recursively (d)
+  (dolist (f (directory-files d))
+    (cond
+     ((file-directory-p (concat d f))
+      (when (not (or (string= f ".") (string= f "..")))
+        (find-file-recursively (concat d f "/"))))
+     ((not (get-file-buffer (concat d f)))
+      (dolist (r pm-list)
+        (when (string-match r f)
+          (find-file-noselect (concat d f))))))))
+
+(defun anything-c-moccur-pmoccur ()
+  (interactive)
+  (let ((d (get-root-directory)))
+    (when d
+      (find-file-recursively d)
+      (anything-c-moccur-buffer-list))))
+
 (require 'php-mode)
 
 ;; (require 'php-completion)
 
 ;; (add-hook 'php-mode-hook
 ;;           (lambda () (add-to-list 'ac-sources 'ac-source-php-completion)))
-
-(load "sdic-for-popwin")
 
 (global-set-key (kbd "C-a") 'back-to-indentation-or-beginning-of-line)
 ;; c
@@ -175,11 +195,13 @@
 (global-set-key (kbd "C-`") 'next-error)
 
 (global-set-key (kbd "M-h") 'mark-whole-buffer)
-(global-set-key (kbd "M-l") 'recenter)
+(global-set-key (kbd "M-k") 'scroll-up-command)
+(global-set-key (kbd "M-l") 'scroll-down-command)
 (global-set-key (kbd "M-o") 'toggle-frame)
 (global-set-key (kbd "M-r") 'replace-string)
-(global-set-key (kbd "M-s") 'anything-c-moccur-dmoccur)
+(global-set-key (kbd "M-s") 'anything-c-moccur-pmoccur)
 (global-set-key (kbd "M-u") 'camel-to-snake-backward-word)
+(global-set-key (kbd "M-v") 'init-project)
 (global-set-key (kbd "M-w") 'kill-ring-save-whole-line-or-region)
 ;; x
 (global-set-key (kbd "M-.") 'anything-yaetags)

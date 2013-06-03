@@ -36,7 +36,7 @@
 (defun delete-file-recursively (d n)
   (dolist (f (directory-files d))
     (cond
-     ((file-directory-p f)
+     ((file-directory-p (concat d f))
       (when (not (or (string= f ".") (string= f "..")))
         (delete-file-recursively (concat d f "/") n)))
      ((string= f n)
